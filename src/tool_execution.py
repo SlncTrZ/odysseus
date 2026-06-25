@@ -98,6 +98,13 @@ def _tool_path_roots() -> list[str]:
     from src.constants import DATA_DIR
     roots.append(DATA_DIR)
 
+    # Windows: allow full access to development drives (H:/, F:/, K:/).
+    if platform.system() == "Windows":
+        for _drive in ("H:", "F:", "K:"):
+            _d = _drive + "/"
+            if os.path.isdir(_d):
+                roots.append(os.path.realpath(_d))
+
     # /tmp (and its macOS realpath /private/tmp).
     roots.append("/tmp")
     try:
