@@ -1,4 +1,7 @@
 import asyncio
+import os
+import platform
+import shutil
 import sys
 import time
 import collections
@@ -101,17 +104,39 @@ async def _run_subprocess_streaming(
     )
 
 class BashTool:
+    @staticmethod
+    def _resolve_shell() -> Optional[str]:
+        """Return a bash-compatible shell path on Windows (Git Bash) or None."""
+        if platform.system() == "Windows":
+            # Prefer Git Bash; fall back to WSL bash if present.
+            for candidate in ["bash", "C:/Program Files/Git/usr/bin/bash"]:
+                p = shutil.which(candidate)
+                if p:
+                    return os.path.realpath(p)
+        return None
+
     async def execute(self, content: str, ctx: dict) -> dict:
         from src.tool_execution import agent_cwd, _truncate
         progress_cb = ctx.get("progress_cb")
         _subproc_env = ctx.get("subproc_env")
-        proc = await asyncio.create_subprocess_shell(
-            content,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            env=_subproc_env,
-            cwd=agent_cwd(),
-        )
+        bash_path = self._resolve_shell()
+        if bash_path:
+            # Windows + Git Bash: run through bash -c so Unix commands work.
+            proc = await asyncio.create_subprocess_exec(
+                    bash_path, "-c", content,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=_subproc_env,
+                    cwd=agent_cwd(),
+                )
+        else:
+            proc = await asyncio.create_subprocess_shell(
+                    content,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=_subproc_env,
+                    cwd=agent_cwd(),
+                )
         stdout, stderr, rc, timed_out = await _run_subprocess_streaming(
             proc,
             timeout=DEFAULT_BASH_TIMEOUT,
