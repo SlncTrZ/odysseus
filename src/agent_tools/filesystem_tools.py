@@ -433,7 +433,8 @@ class GetWorkspaceTool:
                 "exit_code": 0,
             }
         return {
-            "output": "No workspace is set. File tools use the default allowed roots; "
-                      "resolve paths from the user or use absolute paths.",
+            "output": "No workspace is set. File tools can access files on H:\\, F:\\, K:\\ "
+                      "drives, the project data directory, and temp folders. "
+                      "Use absolute paths like H:\\Develop\\Project\\file.py.",
             "exit_code": 0,
         }

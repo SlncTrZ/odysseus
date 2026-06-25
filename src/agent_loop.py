@@ -362,7 +362,7 @@ Edit an EXISTING file by exact string replacement. PREFER this over bash (sed/ec
     "get_workspace": """\
 ```get_workspace
 ```
-Return the absolute path of the active workspace folder. File tools are CONFINED to it (paths can be RELATIVE to it); the shell starts there (cwd) but is NOT sandboxed. Call this first when the user says "the project"/"the code"/"this folder" without a path, instead of asking them. No arguments.""",
+Return the absolute path of the active workspace folder. When a workspace IS set, file tools (read_file, grep, glob, ls) are CONFINED to that folder. When NO workspace is set (returns empty message), file tools can still read files from the development drives H:\, F:\, K:\ and the project data directory — just use an absolute path like H:\Develop\Project\file.py. Call this first when the user mentions "the project" / "the code" / "this folder" without giving a path. No arguments.""",
 
     "create_document": """\
 ```create_document
