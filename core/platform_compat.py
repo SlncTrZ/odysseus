@@ -414,6 +414,7 @@ def run_ssh_command(
         timeout=timeout,
         capture_output=True,
         text=text,
+        encoding="utf-8",
     )
 
 
@@ -448,5 +449,6 @@ def run_wsl_windows_powershell(
         _windows_powershell_argv(command),
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=timeout,
     )

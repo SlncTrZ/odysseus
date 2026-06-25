@@ -102,7 +102,7 @@ body {
      below so left + right docks can coexist without skewing the whole body. */
   transition: padding-left 160ms cubic-bezier(0.22, 0.61, 0.36, 1),
               padding-right 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
-  font-family: var(--font-family, 'Fira Code', monospace);
+  font-family: var(--font-family, 'Times New Roman', serif);
   display: flex;
   height: 100%;
   height: 100dvh; /* dynamic viewport height — adapts when mobile keyboard opens */
@@ -561,7 +561,7 @@ body.bg-pattern-sparkles {
       min-height: 24px;
     }
     .sidebar-brand-title {
-      font-size: 1rem;
+      font-size: 1.15rem;
       font-weight: 600;
       line-height: 1.35;
       color: var(--brand-color, var(--red));
@@ -690,13 +690,13 @@ body.bg-pattern-sparkles {
     }
     .icon-rail-btn {
       position: relative;
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       border: none;
       background: transparent;
       color: var(--accent, var(--red));
-      font-size: 16px;
-      border-radius: 6px;
+      font-size: 20px;
+      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1150,7 +1150,7 @@ body.bg-pattern-sparkles {
       flex: 1; cursor: pointer; user-select: none;
       display: flex; align-items: center; gap: 6px;
       margin: 0; padding: 0; border: none;
-      font-size: 10px; font-weight: 400; font-family: inherit;
+      font-size: 12px; font-weight: 400; font-family: inherit;
       /* 1.3 (not 1) so Fira Code's tall glyph box isn't vertically clipped in
          Chromium/Edge — mirrors the .list-item fix. The title is flex-centred
          in a fixed-height (29px) header, so this adds headroom without reflow. */
@@ -1630,7 +1630,7 @@ body.bg-pattern-sparkles {
       border-radius: 4px;
       border: none;
       line-height: 1.3;
-      font-size: 13px;
+      font-size: 15px;
       background: transparent;
       transition: background 0.08s;
       cursor: pointer;
@@ -1640,7 +1640,7 @@ body.bg-pattern-sparkles {
       margin: 0;
       height: 24px;
       padding: 0 8px;
-      font-size: 9px;
+      font-size: 11px;
     }
     /* Inline "+" action on a tool/section row (Library → new document,
        Email → compose). Sizing forced + min-* zeroed so the mobile
@@ -1714,7 +1714,7 @@ body.bg-pattern-sparkles {
     }
     .list-item span {
       color: var(--fg);
-      font-size: 9.75px;
+      font-size: 12px;
     }
     .grow {
       flex: 1;
@@ -2218,6 +2218,7 @@ body.bg-pattern-sparkles {
       border: 1px solid var(--input-border, var(--border));
       border-radius: 16px;
       padding: 10px 12px;
+      cursor: text;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -2272,9 +2273,9 @@ body.bg-pattern-sparkles {
       font-size: 14px;
       line-height: 1.5;
       color: var(--fg);
-      min-height: 24px;
+      min-height: 44px;
       max-height: 200px;
-      padding: 0;
+      padding: 8px 0;
       font-family: inherit;
       transition: height 0.12s ease-out;
     }
@@ -4149,12 +4150,12 @@ body.bg-pattern-sparkles {
       .list-item {
         padding: 12px 10px !important;
         min-height: 48px;
-        font-size: 14px;
+        font-size: 16px;
         border-radius: 8px;
         gap: 10px !important;
       }
       .list-item .grow {
-        font-size: 14px !important;
+        font-size: 16px !important;
       }
       /* Search, New Chat & Assistant */
       #sidebar-search-btn,
@@ -15673,12 +15674,12 @@ body:not(.email-doc-split-active) #email-lib-modal.email-lib-fullscreen:not(.mod
      modal font, which is the app font (Fira Code) on mobile and Inter on
      desktop (.modal-content's Inter rule is inside @media min-width:769px).
      Mirror that here so all three footers match in both contexts. */
-  font-family: var(--font-family, 'Fira Code', monospace);
+  font-family: var(--font-family, 'Times New Roman', serif);
   transition: border-color 0.15s, color 0.15s;
 }
 @media (min-width: 769px) {
   .doclib-card-action-btn {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Times New Roman', serif;
     letter-spacing: -0.015em;
   }
 }

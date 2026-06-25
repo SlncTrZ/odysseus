@@ -41,7 +41,7 @@ def _run(cmd):
                 text=True,
             )
         else:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=10)
         if r.returncode == 0:
             return r.stdout.strip()
     except Exception:

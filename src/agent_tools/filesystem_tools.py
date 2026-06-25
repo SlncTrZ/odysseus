@@ -333,7 +333,7 @@ class GrepTool:
                 cmd += ["--regexp", pattern, root]
                 try:
                     import subprocess
-                    p = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+                    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=20)
                     lines = [ln for ln in (p.stdout or "").splitlines() if ln][:max_hits]
                     return lines, None
                 except subprocess.TimeoutExpired:

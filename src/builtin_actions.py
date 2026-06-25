@@ -299,7 +299,7 @@ async def _run_subprocess(argv, *, shell: bool = False, timeout: int = 120, labe
     import subprocess
     try:
         result = await asyncio.to_thread(
-            subprocess.run, argv, shell=shell, capture_output=True, text=True, timeout=timeout,
+            subprocess.run, argv, shell=shell, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
         )
         output = (result.stdout or "").strip()
         if result.returncode != 0 and result.stderr:

@@ -908,7 +908,7 @@ def setup_cookbook_routes() -> APIRouter:
                 import subprocess
                 r = subprocess.run(
                     ssh_base + [host_arg, script],
-                    capture_output=True, text=True, timeout=8,
+                    capture_output=True, text=True, encoding="utf-8", timeout=8,
                 )
                 if r.returncode == 0:
                     out = (r.stdout or "").strip().splitlines()
@@ -2398,7 +2398,7 @@ def setup_cookbook_routes() -> APIRouter:
             try:
                 ls = subprocess.run(
                     ssh_base + [host, "tmux ls 2>/dev/null"],
-                    timeout=6, capture_output=True, text=True,
+                    timeout=6, capture_output=True, text=True, encoding="utf-8",
                 )
             except Exception:
                 continue
@@ -2424,7 +2424,7 @@ def setup_cookbook_routes() -> APIRouter:
                     pc = subprocess.run(
                         ssh_base + [host, "tmux", "list-panes", "-t", sid,
                                     "-F", "#{pane_current_command}"],
-                        timeout=4, capture_output=True, text=True,
+                        timeout=4, capture_output=True, text=True, encoding="utf-8",
                     )
                     cur = (pc.stdout or "").strip().splitlines()
                 except Exception:
@@ -2440,7 +2440,7 @@ def setup_cookbook_routes() -> APIRouter:
                 try:
                     cap = subprocess.run(
                         ssh_base + [host, "tmux", "capture-pane", "-t", sid, "-p", "-S", "-300"],
-                        timeout=6, capture_output=True, text=True,
+                        timeout=6, capture_output=True, text=True, encoding="utf-8",
                     )
                     pane = cap.stdout or ""
                 except Exception:
@@ -2854,7 +2854,7 @@ def setup_cookbook_routes() -> APIRouter:
                     # lags with hf_transfer). Falls back to the true last line otherwise.
                     if is_alive:
                         try:
-                            cap = subprocess.run(capture_cmd, timeout=4, capture_output=True, text=True)
+                            cap = subprocess.run(capture_cmd, timeout=4, capture_output=True, text=True, encoding="utf-8")
                             if cap.returncode == 0:
                                 full_snapshot = cap.stdout.strip()
                                 lines = [l.strip() for l in full_snapshot.split('\n') if l.strip()]

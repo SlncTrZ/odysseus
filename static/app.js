@@ -4083,6 +4083,17 @@ function startOdysseusApp() {
   }
 }
 
+// ── Click chat-input-bar to focus textarea ──
+(function initChatInputFocus() {
+  const bar = document.querySelector('.chat-input-bar');
+  const ta = document.getElementById('message');
+  if (!bar || !ta) return;
+  bar.addEventListener('click', function (e) {
+    if (e.target.closest('textarea, input, button, select, .model-picker-wrap, #overflow-menu, #attach-strip')) return;
+    ta.focus();
+  });
+})();
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startOdysseusApp, { once: true });
 } else {
