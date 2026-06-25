@@ -8,11 +8,12 @@ import collections
 from typing import Optional, Callable, Awaitable, Tuple, Dict
 from src.constants import MAX_OUTPUT_CHARS
 
-DEFAULT_BASH_TIMEOUT = 60 * 60     # 1 hour
+DEFAULT_BASH_TIMEOUT = 60 * 60  # 1 hour
 DEFAULT_PYTHON_TIMEOUT = 60 * 60
 
 PROGRESS_INTERVAL_S = 2.0
 PROGRESS_TAIL_LINES = 12
+
 
 async def _run_subprocess_streaming(
     proc: asyncio.subprocess.Process,
@@ -44,10 +45,12 @@ async def _run_subprocess_streaming(
         while True:
             if progress_cb:
                 try:
-                    await progress_cb({
-                        "elapsed_s": round(time.time() - started, 1),
-                        "tail": "\n".join(list(tail)),
-                    })
+                    await progress_cb(
+                        {
+                            "elapsed_s": round(time.time() - started, 1),
+                            "tail": "\n".join(list(tail)),
+                        }
+                    )
                 except Exception:
                     pass
             await asyncio.sleep(PROGRESS_INTERVAL_S)
@@ -103,6 +106,7 @@ async def _run_subprocess_streaming(
         timed_out,
     )
 
+
 class BashTool:
     @staticmethod
     def _resolve_shell() -> Optional[str]:
@@ -117,47 +121,62 @@ class BashTool:
 
     async def execute(self, content: str, ctx: dict) -> dict:
         from src.tool_execution import agent_cwd, _truncate
+
         progress_cb = ctx.get("progress_cb")
         _subproc_env = ctx.get("subproc_env")
         bash_path = self._resolve_shell()
         if bash_path:
             # Windows + Git Bash: run through bash -c so Unix commands work.
             proc = await asyncio.create_subprocess_exec(
-                    bash_path, "-c", content,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    env=_subproc_env,
-                    cwd=agent_cwd(),
-                )
+                bash_path,
+                "-c",
+                content,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=_subproc_env,
+                cwd=agent_cwd(),
+            )
         else:
             proc = await asyncio.create_subprocess_shell(
-                    content,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    env=_subproc_env,
-                    cwd=agent_cwd(),
-                )
+                content,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=_subproc_env,
+                cwd=agent_cwd(),
+            )
         stdout, stderr, rc, timed_out = await _run_subprocess_streaming(
             proc,
             timeout=DEFAULT_BASH_TIMEOUT,
             progress_cb=progress_cb,
         )
         if timed_out:
-            return {"error": f"bash: timed out after {DEFAULT_BASH_TIMEOUT}s — process killed", "exit_code": 124, "stdout": _truncate(stdout, MAX_OUTPUT_CHARS), "stderr": _truncate(stderr, MAX_OUTPUT_CHARS)}
+            return {
+                "error": f"bash: timed out after {DEFAULT_BASH_TIMEOUT}s — process killed",
+                "exit_code": 124,
+                "stdout": _truncate(stdout, MAX_OUTPUT_CHARS),
+                "stderr": _truncate(stderr, MAX_OUTPUT_CHARS),
+            }
         output = stdout.rstrip()
         err = stderr.rstrip()
         if err:
-            output = (output + "\nSTDERR: " + err).strip() if output else "STDERR: " + err
+            output = (
+                (output + "\nSTDERR: " + err).strip() if output else "STDERR: " + err
+            )
         output = _truncate(output, MAX_OUTPUT_CHARS)
         return {"output": output or "(no output)", "exit_code": rc or 0}
+
 
 class PythonTool:
     async def execute(self, content: str, ctx: dict) -> dict:
         from src.tool_execution import agent_cwd, _truncate
+
         progress_cb = ctx.get("progress_cb")
         _subproc_env = ctx.get("subproc_env")
         proc = await asyncio.create_subprocess_exec(
-            (sys.executable or "python"), "-I", "-c", content,
+            (sys.executable or "python"),
+            "-I",
+            "-c",
+            content,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=_subproc_env,
@@ -169,10 +188,17 @@ class PythonTool:
             progress_cb=progress_cb,
         )
         if timed_out:
-            return {"error": f"python: timed out after {DEFAULT_PYTHON_TIMEOUT}s — process killed", "exit_code": 124, "stdout": _truncate(stdout, MAX_OUTPUT_CHARS), "stderr": _truncate(stderr, MAX_OUTPUT_CHARS)}
+            return {
+                "error": f"python: timed out after {DEFAULT_PYTHON_TIMEOUT}s — process killed",
+                "exit_code": 124,
+                "stdout": _truncate(stdout, MAX_OUTPUT_CHARS),
+                "stderr": _truncate(stderr, MAX_OUTPUT_CHARS),
+            }
         output = stdout.rstrip()
         err = stderr.rstrip()
         if err:
-            output = (output + "\nSTDERR: " + err).strip() if output else "STDERR: " + err
+            output = (
+                (output + "\nSTDERR: " + err).strip() if output else "STDERR: " + err
+            )
         output = _truncate(output, MAX_OUTPUT_CHARS)
         return {"output": output or "(no output)", "exit_code": rc or 0}

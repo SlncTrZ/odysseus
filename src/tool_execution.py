@@ -20,7 +20,6 @@ import time
 from typing import Any, Awaitable, Callable, Dict, Optional, Tuple
 
 
-
 from src.tool_security import is_public_blocked_tool, owner_is_admin_or_single_user
 from src.tool_policy import ToolPolicy
 from src.constants import MAX_OUTPUT_CHARS, MAX_READ_CHARS, MAX_DIFF_LINES, DATA_DIR
@@ -32,7 +31,6 @@ from src.tool_utils import _truncate, get_mcp_manager
 # Using this as cwd and HOME prevents the agent from silently creating files
 # in ephemeral container layers that are lost on the next rebuild.
 _AGENT_WORKDIR = DATA_DIR
-
 
 
 # ---------------------------------------------------------------------------
@@ -54,15 +52,27 @@ _AGENT_WORKDIR = DATA_DIR
 # ---------------------------------------------------------------------------
 
 _SENSITIVE_BASENAMES: set[str] = {
-    ".ssh", ".gnupg", ".gitconfig",
-    ".bashrc", ".bash_profile", ".bash_logout",
-    ".zshrc", ".zprofile", ".zshenv",
-    ".profile", ".tcshrc", ".cshrc",
-    ".env", ".netrc",
+    ".ssh",
+    ".gnupg",
+    ".gitconfig",
+    ".bashrc",
+    ".bash_profile",
+    ".bash_logout",
+    ".zshrc",
+    ".zprofile",
+    ".zshenv",
+    ".profile",
+    ".tcshrc",
+    ".cshrc",
+    ".env",
+    ".netrc",
 }
 
 _SENSITIVE_FILE_PATTERNS: tuple[str, ...] = (
-    "authorized_keys", "id_rsa", "id_ed25519", "id_ecdsa",
+    "authorized_keys",
+    "id_rsa",
+    "id_ed25519",
+    "id_ecdsa",
     "known_hosts",
 )
 
@@ -96,6 +106,7 @@ def _tool_path_roots() -> list[str]:
 
     # Project data directory — the agent's primary workspace.
     from src.constants import DATA_DIR
+
     roots.append(DATA_DIR)
 
     # Windows: allow full access to development drives (H:/, F:/, K:/).
@@ -122,6 +133,7 @@ def _tool_path_roots() -> list[str]:
     # Opt-in extra roots from settings.
     try:
         from src.settings import get_setting
+
         extra = get_setting("tool_path_extra_roots")
         if isinstance(extra, list):
             roots.extend(str(r) for r in extra if r)
@@ -181,9 +193,7 @@ def _resolve_tool_path(raw_path: str) -> str:
             continue
         if common == root:
             return resolved
-    raise ValueError(
-        f"path '{raw_path}' is outside the allowed roots"
-    )
+    raise ValueError(f"path '{raw_path}' is outside the allowed roots")
 
 
 def _resolve_tool_path_in_workspace(workspace: str, raw_path: str) -> str:
@@ -216,9 +226,10 @@ def _resolve_tool_path_in_workspace(workspace: str, raw_path: str) -> str:
             if os.path.commonpath([os.path.normcase(resolved), nbase]) != nbase:
                 raise ValueError
         except ValueError:
-            raise ValueError(f"path '{raw_path}' is outside the workspace ({workspace})")
+            raise ValueError(
+                f"path '{raw_path}' is outside the workspace ({workspace})"
+            )
     return resolved
-
 
 
 # ---------------------------------------------------------------------------
@@ -272,9 +283,8 @@ def agent_cwd() -> str:
 
 def get_mcp_manager():
     from src import agent_tools
+
     return agent_tools.get_mcp_manager()
-
-
 
 
 def _resolve_search_root(raw_path: str) -> str:
@@ -288,11 +298,16 @@ def _resolve_search_root(raw_path: str) -> str:
     raw = (raw_path or "").strip()
     ws = get_active_workspace()
     if ws:
-        return os.path.realpath(ws) if not raw else _resolve_tool_path_in_workspace(ws, raw)
+        return (
+            os.path.realpath(ws)
+            if not raw
+            else _resolve_tool_path_in_workspace(ws, raw)
+        )
     if not raw:
         roots = _tool_path_roots()
         return roots[0] if roots else os.path.realpath(".")
     return _resolve_tool_path(raw)
+
 
 logger = logging.getLogger(__name__)
 
@@ -316,19 +331,20 @@ def _owner_is_admin(owner: Optional[str]) -> bool:
     """Mirror route-level admin behavior for agent tool execution."""
     return owner_is_admin_or_single_user(owner)
 
+
 # ---------------------------------------------------------------------------
 # MCP-backed tool helpers
 # ---------------------------------------------------------------------------
 
 # Map legacy tool names -> (MCP server_id, MCP tool_name)
 _MCP_TOOL_MAP = {
-    "bash":           ("bash",       "bash"),
-    "python":         ("python",     "python"),
-    "read_file":      ("filesystem", "read_file"),
-    "write_file":     ("filesystem", "write_file"),
-    "web_search":     ("web_search", "web_search"),
-    "web_fetch":      ("web_fetch",  "web_fetch"),
-    "generate_image": ("image_gen",  "generate_image"),
+    "bash": ("bash", "bash"),
+    "python": ("python", "python"),
+    "read_file": ("filesystem", "read_file"),
+    "write_file": ("filesystem", "write_file"),
+    "web_search": ("web_search", "web_search"),
+    "web_fetch": ("web_fetch", "web_fetch"),
+    "generate_image": ("image_gen", "generate_image"),
 }
 _EMAIL_MCP_OWNER_ARG = "_odysseus_owner"
 
@@ -386,14 +402,14 @@ def _parse_write_file(content: str) -> Dict:
 
 
 _MCP_ARG_PARSERS: Dict[str, Callable[[str], Dict[str, str]]] = {
-    "bash":           lambda c: {"command": c},
-    "python":         lambda c: {"code": c},
-    "web_search":     lambda c: {"query": c.split("\n")[0].strip()},
-    "web_fetch":      lambda c: {"url": c.split("\n")[0].strip()},
-    "read_file":      lambda c: {"path": c.split("\n")[0].strip()},
-    "write_file":     _parse_write_file,
+    "bash": lambda c: {"command": c},
+    "python": lambda c: {"code": c},
+    "web_search": lambda c: {"query": c.split("\n")[0].strip()},
+    "web_fetch": lambda c: {"url": c.split("\n")[0].strip()},
+    "read_file": lambda c: {"path": c.split("\n")[0].strip()},
+    "write_file": _parse_write_file,
     "generate_image": _parse_generate_image,
-    "manage_memory":  _parse_manage_memory,
+    "manage_memory": _parse_manage_memory,
 }
 
 
@@ -411,7 +427,10 @@ async def _call_mcp_tool(
     """Route a legacy tool call through the MCP manager, with direct fallbacks."""
     mcp = get_mcp_manager()
     if not mcp:
-        return await _direct_fallback(tool, content, progress_cb=progress_cb) or {"error": f"MCP manager not available for tool '{tool}'", "exit_code": 1}
+        return await _direct_fallback(tool, content, progress_cb=progress_cb) or {
+            "error": f"MCP manager not available for tool '{tool}'",
+            "exit_code": 1,
+        }
 
     server_id, tool_name = _MCP_TOOL_MAP[tool]
     qualified = f"mcp__{server_id}__{tool_name}"
@@ -419,7 +438,11 @@ async def _call_mcp_tool(
     result = await mcp.call_tool(qualified, args)
 
     # If MCP server not connected, try direct fallback
-    if isinstance(result, dict) and result.get("exit_code") == 1 and "not connected" in result.get("error", ""):
+    if (
+        isinstance(result, dict)
+        and result.get("exit_code") == 1
+        and "not connected" in result.get("error", "")
+    ):
         fallback = await _direct_fallback(tool, content, progress_cb=progress_cb)
         if fallback:
             return fallback
@@ -444,21 +467,29 @@ def _promote_image_fields(result: Dict) -> None:
     if not isinstance(result, dict) or result.get("exit_code") != 0:
         return
     out = result.get("stdout") or ""
-    m = re.search(r'(?:https?://[^\s)\]]+)?/api/generated-image/[A-Za-z0-9._-]+', out)
+    m = re.search(r"(?:https?://[^\s)\]]+)?/api/generated-image/[A-Za-z0-9._-]+", out)
     if not m:
         return
     result["image_url"] = m.group(0).strip()
     for field, pat in (
-        ("image_prompt", r'^Generated image for:\s*(.+)$'),
-        ("image_model", r'^model:\s*(.+)$'),
-        ("image_size", r'^size:\s*(.+)$'),
+        ("image_prompt", r"^Generated image for:\s*(.+)$"),
+        ("image_model", r"^model:\s*(.+)$"),
+        ("image_size", r"^size:\s*(.+)$"),
     ):
         fm = re.search(pat, out, re.M)
         if fm:
             result[field] = fm.group(1).strip()
 
 
-_BG_MARKERS = {"#!bg", "#bg", "# bg", "#background", "# background", "@background", "# @background"}
+_BG_MARKERS = {
+    "#!bg",
+    "#bg",
+    "# bg",
+    "#background",
+    "# background",
+    "@background",
+    "# @background",
+}
 
 
 def _split_bg_marker(content: str):
@@ -498,6 +529,7 @@ async def _direct_fallback(
         }
 
         from src.agent_tools import TOOL_HANDLERS
+
         if tool in TOOL_HANDLERS:
             return await TOOL_HANDLERS[tool](content, ctx)
 
@@ -515,6 +547,7 @@ async def _document_tool_dispatch(
 ) -> Optional[Dict]:
     """Route a document tool through TOOL_HANDLERS with the right ctx shape."""
     from src.agent_tools import TOOL_HANDLERS
+
     ctx = {"session_id": session_id, "owner": owner}
     if tool in TOOL_HANDLERS:
         return await TOOL_HANDLERS[tool](content, ctx)
@@ -524,6 +557,7 @@ async def _document_tool_dispatch(
 # ---------------------------------------------------------------------------
 # Dispatcher
 # ---------------------------------------------------------------------------
+
 
 async def execute_tool_block(
     block: Any,
@@ -569,17 +603,33 @@ async def _execute_tool_block_impl(
     events while the command is in flight. Ignored by other tools.
     """
     from src.tool_implementations import (
-        do_search_chats, do_manage_tasks,
-        do_manage_skills, do_api_call, do_manage_notes,
+        do_search_chats,
+        do_manage_tasks,
+        do_manage_skills,
+        do_api_call,
+        do_manage_notes,
         do_manage_calendar,
-        do_download_model, do_serve_model, do_list_served_models, do_stop_served_model,
+        do_download_model,
+        do_serve_model,
+        do_list_served_models,
+        do_stop_served_model,
         do_tail_serve_output,
-        do_list_downloads, do_cancel_download, do_search_hf_models, do_list_cached_models,
-        do_list_serve_presets, do_serve_preset, do_adopt_served_model,
+        do_list_downloads,
+        do_cancel_download,
+        do_search_hf_models,
+        do_list_cached_models,
+        do_list_serve_presets,
+        do_serve_preset,
+        do_adopt_served_model,
         do_list_cookbook_servers,
-        do_edit_image, do_trigger_research, do_manage_research, do_resolve_contact,
+        do_edit_image,
+        do_trigger_research,
+        do_manage_research,
+        do_resolve_contact,
         do_manage_contact,
-        do_vault_search, do_vault_get, do_vault_unlock,
+        do_vault_search,
+        do_vault_get,
+        do_vault_unlock,
         do_app_api,
     )
 
@@ -589,7 +639,11 @@ async def _execute_tool_block_impl(
     # Misformatted tool call detection: model put JSON inside ```python``` (or
     # similar) without naming the tool. Common with MiniMax-style outputs.
     # Return a helpful error so the model retries with the correct format.
-    if tool in ("python", "json", "xml") and content.strip().startswith("{") and content.strip().endswith("}"):
+    if (
+        tool in ("python", "json", "xml")
+        and content.strip().startswith("{")
+        and content.strip().endswith("}")
+    ):
         try:
             parsed = json.loads(content.strip())
             if isinstance(parsed, dict):
@@ -599,11 +653,11 @@ async def _execute_tool_block_impl(
                         f"You wrote a JSON object inside a ```{tool}``` block, but that's not a tool call.\n"
                         "To call a tool, use the tool name as the fence tag, e.g.\n"
                         "```resolve_contact\n"
-                        "{\"name\": \"...\"}\n"
+                        '{"name": "..."}\n'
                         "```\n"
                         "or\n"
                         "```send_email\n"
-                        "{\"to\": \"...\", \"subject\": \"...\", \"body\": \"...\"}\n"
+                        '{"to": "...", "subject": "...", "body": "..."}\n'
                         "```"
                     ),
                     "exit_code": 1,
@@ -661,7 +715,7 @@ async def _execute_tool_block_impl(
         if isinstance(parsed, dict):
             question = str(parsed.get("question", "")).strip()
             multi = bool(parsed.get("multi") or parsed.get("multiSelect"))
-            for opt in (parsed.get("options") or []):
+            for opt in parsed.get("options") or []:
                 if isinstance(opt, dict):
                     label = str(opt.get("label", "")).strip()
                     descr = str(opt.get("description", "")).strip()
@@ -689,7 +743,9 @@ async def _execute_tool_block_impl(
             "output": f"Asked the user: {question}\nOptions: {labels}\nAwaiting their selection.",
             "exit_code": 0,
         }
-        logger.info("Tool executed: %s (%d options, multi=%s)", desc, len(options), multi)
+        logger.info(
+            "Tool executed: %s (%d options, multi=%s)", desc, len(options), multi
+        )
         return desc, result
 
     # update_plan: the agent writes back to the active plan — tick an item done
@@ -699,6 +755,7 @@ async def _execute_tool_block_impl(
     # the docked plan window. Does NOT end the turn.
     if tool == "update_plan":
         import json as _json
+
         raw = (content or "").strip()
         plan = ""
         try:
@@ -721,7 +778,9 @@ async def _execute_tool_block_impl(
         desc = f"update_plan: {done}/{total} done" if total else "update_plan"
         result = {
             "plan_update": {"plan": plan},
-            "output": f"Plan updated ({done}/{total} steps complete)." if total else "Plan updated.",
+            "output": f"Plan updated ({done}/{total} steps complete)."
+            if total
+            else "Plan updated.",
             "exit_code": 0,
         }
         logger.info("Tool executed: %s", desc)
@@ -735,6 +794,7 @@ async def _execute_tool_block_impl(
         _is_bg, _bg_cmd = _split_bg_marker(content)
         if _is_bg and _bg_cmd:
             from src import bg_jobs
+
             rec = bg_jobs.launch(_bg_cmd, session_id=session_id, cwd=agent_cwd())
             short = _bg_cmd.strip().split(chr(10))[0][:80]
             desc = f"bash (background): {short}"
@@ -765,18 +825,28 @@ async def _execute_tool_block_impl(
         # Code-navigation tools — no MCP server; run the direct implementation.
         first_line = content.split(chr(10))[0][:80]
         desc = f"{tool}: {first_line}"
-        result = await _direct_fallback(tool, content, progress_cb=progress_cb) \
-            or {"error": f"{tool}: execution failed", "exit_code": 1}
+        result = await _direct_fallback(tool, content, progress_cb=progress_cb) or {
+            "error": f"{tool}: execution failed",
+            "exit_code": 1,
+        }
     elif tool == "manage_bg_jobs":
         # Inspect/kill detached `bash` jobs; needs session_id to scope to chat.
         desc = f"manage_bg_jobs: {content.split(chr(10))[0][:80]}"
-        result = await _direct_fallback(tool, content, session_id=session_id, owner=owner) \
-            or {"error": "manage_bg_jobs: execution failed", "exit_code": 1}
-    elif tool in ("create_document", "update_document", "edit_document",
-                  "suggest_document", "manage_documents"):
+        result = await _direct_fallback(
+            tool, content, session_id=session_id, owner=owner
+        ) or {"error": "manage_bg_jobs: execution failed", "exit_code": 1}
+    elif tool in (
+        "create_document",
+        "update_document",
+        "edit_document",
+        "suggest_document",
+        "manage_documents",
+    ):
         desc = f"{tool}: {content.split(chr(10))[0][:80]}"
-        result = await _document_tool_dispatch(tool, content, session_id, owner) \
-            or {"error": f"{tool}: execution failed", "exit_code": 1}
+        result = await _document_tool_dispatch(tool, content, session_id, owner) or {
+            "error": f"{tool}: execution failed",
+            "exit_code": 1,
+        }
         if tool in ("edit_document", "suggest_document") and "title" in (result or {}):
             desc = f"{tool}: {result.get('title', '')}"
     elif tool == "search_chats":
@@ -790,18 +860,28 @@ async def _execute_tool_block_impl(
         # src/agent_tools/model_interaction_tools.py.
         first_line = content.split(chr(10))[0].strip()[:60]
         desc = f"{tool}: {first_line}" if first_line else tool
-        result = await _document_tool_dispatch(tool, content, session_id, owner) \
-            or {"error": f"{tool}: execution failed", "exit_code": 1}
-    elif tool in ("create_session", "list_sessions", "send_to_session", "manage_session"):
+        result = await _document_tool_dispatch(tool, content, session_id, owner) or {
+            "error": f"{tool}: execution failed",
+            "exit_code": 1,
+        }
+    elif tool in (
+        "create_session",
+        "list_sessions",
+        "send_to_session",
+        "manage_session",
+    ):
         # Migrated to the agent_tools registry (#3629): dispatched through
         # TOOL_HANDLERS with the owner/session ctx these tools need. The impls
         # live in src/agent_tools/session_tools.py.
         first_line = content.split(chr(10))[0].strip()[:60]
         desc = f"{tool}: {first_line}" if first_line else tool
-        result = await _document_tool_dispatch(tool, content, session_id, owner) \
-            or {"error": f"{tool}: execution failed", "exit_code": 1}
+        result = await _document_tool_dispatch(tool, content, session_id, owner) or {
+            "error": f"{tool}: execution failed",
+            "exit_code": 1,
+        }
     elif tool in ("pipeline", "manage_memory", "ui_control"):
         from src.ai_interaction import dispatch_ai_tool
+
         desc, result = await dispatch_ai_tool(tool, content, session_id, owner=owner)
     elif tool == "manage_tasks":
         desc = "manage_tasks"
@@ -813,11 +893,19 @@ async def _execute_tool_block_impl(
         first_line = content.split("\n")[0].strip()[:60]
         desc = f"api_call: {first_line}"
         result = await do_api_call(content)
-    elif tool in ("manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens", "manage_settings"):
+    elif tool in (
+        "manage_endpoints",
+        "manage_mcp",
+        "manage_webhooks",
+        "manage_tokens",
+        "manage_settings",
+    ):
         # Registry-dispatched (agent_tools.admin_tools); owner threaded for ownership/admin checks.
         desc = tool
-        result = await _direct_fallback(tool, content, owner=owner) \
-            or {"error": f"{tool}: execution failed", "exit_code": 1}
+        result = await _direct_fallback(tool, content, owner=owner) or {
+            "error": f"{tool}: execution failed",
+            "exit_code": 1,
+        }
     elif tool == "manage_notes":
         desc = "manage_notes"
         result = await do_manage_notes(content, owner=owner)
@@ -870,7 +958,10 @@ async def _execute_tool_block_impl(
         desc = "edit_image"
         result = await do_edit_image(content, owner=owner)
     elif tool == "edit_file":
-        result = await _direct_fallback(tool, content) or {"error": "edit failed", "exit_code": 1}
+        result = await _direct_fallback(tool, content) or {
+            "error": "edit failed",
+            "exit_code": 1,
+        }
         desc = result.get("output") or result.get("error") or "edit_file"
     elif tool == "trigger_research":
         desc = "trigger_research"
@@ -923,10 +1014,26 @@ async def _execute_tool_block_impl(
 
 # Keys handled by the dedicated branches below — never echo them as raw JSON.
 _FORMATTER_HANDLED_KEYS = {
-    "stdout", "stderr", "exit_code", "content", "size",
-    "response", "results", "session_id", "name", "model", "session_name",
-    "success", "path", "action", "title", "doc_id", "version", "applied",
-    "error", "output",
+    "stdout",
+    "stderr",
+    "exit_code",
+    "content",
+    "size",
+    "response",
+    "results",
+    "session_id",
+    "name",
+    "model",
+    "session_name",
+    "success",
+    "path",
+    "action",
+    "title",
+    "doc_id",
+    "version",
+    "applied",
+    "error",
+    "output",
 }
 
 
@@ -946,7 +1053,9 @@ def format_tool_result(description: str, result: Dict) -> str:
         if result.get("exit_code") not in (0, None):
             parts.append(f"**exit_code:** {result['exit_code']}")
     elif "content" in result:
-        parts.append(f"**content ({result.get('size', '?')} chars):**\n```\n{result['content']}\n```")
+        parts.append(
+            f"**content ({result.get('size', '?')} chars):**\n```\n{result['content']}\n```"
+        )
     elif "response" in result:
         model = result.get("model", result.get("session_name", ""))
         if model:
@@ -956,7 +1065,9 @@ def format_tool_result(description: str, result: Dict) -> str:
     elif "results" in result:
         parts.append(result["results"])
     elif "session_id" in result and "name" in result:
-        parts.append(f"Session created: **{result['name']}** (id: `{result['session_id']}`, model: {result.get('model', 'unknown')})")
+        parts.append(
+            f"Session created: **{result['name']}** (id: `{result['session_id']}`, model: {result.get('model', 'unknown')})"
+        )
     elif "success" in result:
         if result["success"]:
             parts.append(f"File written: {result['path']} ({result['size']} bytes)")
@@ -965,11 +1076,17 @@ def format_tool_result(description: str, result: Dict) -> str:
     elif "action" in result:
         action = result["action"]
         if action == "create":
-            parts.append(f"Document created: \"{result.get('title', '')}\" (id: {result['doc_id']}, v{result['version']})")
+            parts.append(
+                f'Document created: "{result.get("title", "")}" (id: {result["doc_id"]}, v{result["version"]})'
+            )
         elif action == "update":
-            parts.append(f"Document updated: \"{result.get('title', '')}\" (v{result['version']})")
+            parts.append(
+                f'Document updated: "{result.get("title", "")}" (v{result["version"]})'
+            )
         elif action == "edit":
-            parts.append(f'Document edited: "{result.get("title", "")}" (v{result.get("version", "?")}, {result.get("applied", 0)} edit(s) applied)')
+            parts.append(
+                f'Document edited: "{result.get("title", "")}" (v{result.get("version", "?")}, {result.get("applied", 0)} edit(s) applied)'
+            )
     elif "error" in result:
         parts.append(f"**Error:** {result['error']}")
 
@@ -983,7 +1100,10 @@ def format_tool_result(description: str, result: Dict) -> str:
             extra_json = json.dumps(extra, indent=2, default=str, ensure_ascii=False)
             # Cap to avoid blowing the context window on huge payloads.
             if len(extra_json) > 8000:
-                extra_json = extra_json[:8000] + f"\n... (truncated, {len(extra_json)} chars total)"
+                extra_json = (
+                    extra_json[:8000]
+                    + f"\n... (truncated, {len(extra_json)} chars total)"
+                )
             parts.append(f"**data:**\n```json\n{extra_json}\n```")
         except (TypeError, ValueError):
             pass

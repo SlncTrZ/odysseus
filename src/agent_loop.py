@@ -256,7 +256,8 @@ _DOMAIN_RULES = {
 ## File rules
 - Use file tools for real disk files. Use document tools only for editor documents.
 - Prefer `grep`, `glob`, and `ls` over shell equivalents when available.
-- Use `edit_file`/`write_file` for writes; avoid shell redirection/heredocs for editing files.""",
+- Use `edit_file`/`write_file` for writes; avoid shell redirection/heredocs for editing files.
+- IMPORTANT Windows paths: use H:/Develop/... (NOT /mnt/h/... -- that is WSL). Bash runs via Git Bash (MSYS2) which accepts H:/ or /h/ style paths.""",
     "settings": """\
 ## Settings/API rules
 - Use `manage_settings` for preferences and tool enable/disable.
@@ -362,7 +363,7 @@ Edit an EXISTING file by exact string replacement. PREFER this over bash (sed/ec
     "get_workspace": """\
 ```get_workspace
 ```
-Return the absolute path of the active workspace folder. When a workspace IS set, file tools (read_file, grep, glob, ls) are CONFINED to that folder. When NO workspace is set (returns empty message), file tools can still read files from the development drives H:\, F:\, K:\ and the project data directory — just use an absolute path like H:\Develop\Project\file.py. Call this first when the user mentions "the project" / "the code" / "this folder" without giving a path. No arguments.""",
+Return the absolute path of the active workspace folder. When a workspace IS set, file tools (read_file, grep, glob, ls) are CONFINED to that folder. When NO workspace is set (returns empty message), file tools can still read files from the development drives H:/, F:/, K:/ and the project data directory — just use an absolute path like H:/Develop/Project/file.py. Call this first when the user mentions "the project" / "the code" / "this folder" without giving a path. No arguments.""",
 
     "create_document": """\
 ```create_document

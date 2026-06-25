@@ -433,8 +433,8 @@ class GetWorkspaceTool:
                 "exit_code": 0,
             }
         return {
-            "output": "No workspace is set. File tools can access files on H:\\, F:\\, K:\\ "
+            "output": "No workspace is set. File tools can access files on H:/, F:/, K:/ "
                       "drives, the project data directory, and temp folders. "
-                      "Use absolute paths like H:\\Develop\\Project\\file.py.",
+                      "Use absolute paths like H:/Develop/Project/file.py.",
             "exit_code": 0,
         }
