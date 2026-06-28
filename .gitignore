@@ -1,104 +1,92 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
-!static/js/editor/build/
-venv/
-.venv/
-*.egg
 
-# Environment
-.env
-.env.bak.*
 !.env.example
-# Local uv lockfile (optional, per-platform — see "Faster installs with uv" in README)
-requirements.lock
-
-# SOPS workflow — encrypted `secrets.env` is intentionally committable,
-# but every variant (plaintext, manual decrypt copy, editor backup)
-# must stay out of git. Mirrored in .dockerignore so the same artifacts
-# also cannot enter image build layers.
-secrets.env.*
+!docs/**/*.gif
+!docs/**/*.jpg
+!docs/**/*.png
+!docs/**/*.webp
+!docs/*.gif
+!docs/*.jpeg
+!docs/*.jpg
+!docs/*.png
+!docs/*.webp
 !secrets.env.example
-
-# Data — all user data stays local
-data/
 !services/hwfit/data/
 !services/hwfit/data/hf_models.json
-logs/
-*.log
+!static/icons/*.png
+!static/js/editor/build/
+# Build artifacts
+# Data — all user data stays local
+# Environment
+# IDE / Editor
+# Internal dev/review notes — not for public repo
+# Local config
+# Local uv lockfile (optional, per-platform — see "Faster installs with uv" in README)
+# Media (uploaded/generated)
+# Node
+# OS
+# Python
+# Reports and temp files
+# SOPS workflow — encrypted `secrets.env` is intentionally committable,
+# Test capture artifacts (browser session dumps may contain personal content)
+# Windows-port working docs (local only, not for public repo)
+# also cannot enter image build layers.
+# but every variant (plaintext, manual decrypt copy, editor backup)
+# must stay out of git. Mirrored in .dockerignore so the same artifacts
+# …and curated docs/ subfolder assets (e.g. accessibility before/after shots).
+# …except shipped demo assets in docs/ that the README links to.
+# …except shipped static assets
+**/search_analytics.json
+*.bmp
+*.cache
 *.db
+*.egg
+*.egg-info/
+*.error.log
+*.gif
+*.jpeg
+*.jpg
+*.log
+*.pdf
+*.png
+*.pyc
+*.pyo
 *.sqlite
 *.sqlite3
-
-# Node
-node_modules/
-services/node_modules/
-services/data/
-
-# IDE / Editor
+*.swo
+*.swp
+*.tiff
+*.webp
+*~
+.DS_Store
 .aider*
 .claude/
-.vscode/
+.env
+.env.bak.*
 .idea/
-*.swp
-*.swo
-*~
-
-# Test capture artifacts (browser session dumps may contain personal content)
 .playwright-mcp/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build artifacts
-*.cache
-cache/
-output.txt.txt
-
-# Media (uploaded/generated)
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.bmp
-*.webp
-*.tiff
-*.pdf
-
-# …except shipped static assets
-!static/icons/*.png
-
-# …except shipped demo assets in docs/ that the README links to.
-!docs/*.jpg
-!docs/*.jpeg
-!docs/*.png
-!docs/*.gif
-!docs/*.webp
-# …and curated docs/ subfolder assets (e.g. accessibility before/after shots).
-!docs/**/*.png
-!docs/**/*.jpg
-!docs/**/*.gif
-!docs/**/*.webp
-
-# Reports and temp files
-reports/
-tasks/
-scripts/compound/*.json
-research_data/
-**/search_analytics.json
-
-# Internal dev/review notes — not for public repo
-dev-docs/
-# Windows-port working docs (local only, not for public repo)
-docs/windows-port/
-
-# Local config
-compound.config.json
-*.error.log
-_scratch/
+.venv/
+.vscode/
 /odysseus/
+Thumbs.db
+__pycache__/
+_scratch/
+build/
+cache/
+compound.config.json
+data/
+dev-docs/
+dist/
+docs/windows-port/
+logs/
+node_modules/
+nul
+output.txt.txt
+reports/
+requirements.lock
+research_data/
+scripts/compound/*.json
+secrets.env.*
+services/data/
+services/node_modules/
+tasks/
+venv/

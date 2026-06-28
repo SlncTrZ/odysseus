@@ -104,24 +104,17 @@ services:
     # `KeyError: 'default_doi_resolver'`, failing the healthcheck (issue #1414).
     # Bump this deliberately after verifying a newer tag boots clean.
     image: docker.io/searxng/searxng:2026.5.31-7159b8aed
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        set -eu
-        if [ ! -s /etc/searxng/settings.yml ] || grep -q 'odysseus-local-searxng-json-2026-05-30\|__SEARXNG_SECRET__' /etc/searxng/settings.yml; then
-          secret="$${SEARXNG_SECRET:-}"
-          if [ -z "$$secret" ]; then
-            secret="$$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
-          fi
-          sed "s|__SEARXNG_SECRET__|$$secret|g" /tmp/searxng-settings.yml.template > /etc/searxng/settings.yml
-        fi
-        exec /usr/local/searxng/entrypoint.sh
+    # Inject SearXNG secret + render templated settings on first boot, then
+    # hand off to the official entrypoint. Logic lives in
+    # docker/searxng-wrapper.sh so this file stays lint-clean and the wrapper
+    # is testable standalone.
+    entrypoint: ["/usr/local/bin/searxng-wrapper.sh"]
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
       - searxng-data:/etc/searxng
       - ./config/searxng/settings.yml:/tmp/searxng-settings.yml.template:ro,z
+      - ./docker/searxng-wrapper.sh:/usr/local/bin/searxng-wrapper.sh:ro,z
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
       - SEARXNG_SECRET=${SEARXNG_SECRET:-}
@@ -140,7 +133,9 @@ services:
       - SETUID
       - DAC_OVERRIDE
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/', timeout=5).read(1)\""]
+      # Delegates to the wrapper's healthcheck mode (same python probe as
+      # before, kept short via the mounted script).
+      test: ["CMD-SHELL", "/usr/local/bin/searxng-wrapper.sh healthcheck"]
       interval: 5s
       timeout: 6s
       retries: 20
